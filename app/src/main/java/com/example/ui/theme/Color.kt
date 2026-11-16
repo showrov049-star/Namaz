@@ -1,0 +1,26 @@
+package com.example.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+val BgDeepForest = Color(0xFF06140D)
+val BgEmeraldNight = Color(0xFF0A2015)
+val BgNightTop = Color(0xFF04100A)
+val BgNavBar = Color(0xFF071910)
+val CardDarkEmerald = Color(0xFF0D2519)
+val CardElevated = Color(0xFF123022)
+val BorderEmeraldGlow = Color(0xFF1F543A)
+val EmeraldPrimary = Color(0xFF00C853)
+val EmeraldGlow = Color(0xFF1AE070)
+val EmeraldDeep = Color(0xFF0A6632)
+val EmeraldInactiveRing = Color(0xFF1D4632)
+val EmeraldInactiveTop = Color(0xFF1D4D37)
+val EmeraldInactiveBottom = Color(0xFF0F2D1F)
+val GoldAccent = Color(0xFFF4C95D)
+val GoldSoft = Color(0xFFD9AE48)
+val TextPrimary = Color(0xFFF3FAF6)
+val TextSecondary = Color(0xFF9AB8A8)
+val DangerRed = Color(0xFFE53935)
+val InfoSky = Color(0xFF4FC3F7)
+val AvatarSurface = Color(0xFF284739)
+val AvatarIconTint = Color(0xFFB5CEC2)
+val SilhouetteDark = Color(0xFF030B07)

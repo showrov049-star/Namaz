@@ -1,0 +1,8 @@
+{
+  "name": "NAMAZ",
+  "description": "Smart Prayer Mode app with Quick Settings Tile, Salah countdown timer, persistent notification, and Android-compliant call handling in Bengali and English.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

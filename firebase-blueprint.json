@@ -1,0 +1,57 @@
+{
+  "entities": {
+    "UserPreferences": {
+      "title": "UserPreferences",
+      "description": "Synced NAMAZ preferences, Tasbih counters, Dua bookmarks, and prayer reminder config per authenticated user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Firebase Auth UID of the document owner." },
+        "appLanguage": { "type": "string", "enum": ["ENGLISH", "BENGALI"] },
+        "voiceLanguage": { "type": "string", "enum": ["BENGALI", "ENGLISH"] },
+        "durationMinutes": { "type": "integer", "description": "Focus timer duration in minutes." },
+        "autoTurnOff": { "type": "boolean" },
+        "autoCallResponseEnabled": { "type": "boolean" },
+        "calculationMethod": { "type": "string" },
+        "asrSchool": { "type": "string", "enum": ["HANAFI", "STANDARD"] },
+        "touchSoundsEnabled": { "type": "boolean" },
+        "hapticFeedbackEnabled": { "type": "boolean" },
+        "soundVolume": { "type": "number" },
+        "hapticIntensity": { "type": "string", "enum": ["LIGHT", "MEDIUM", "STRONG"] },
+        "tasbihZikrId": { "type": "string" },
+        "tasbihDailyCount": { "type": "integer" },
+        "tasbihLifetimeCount": { "type": "integer" },
+        "tasbihDailyGoal": { "type": "integer" },
+        "tasbihDateKey": { "type": "string" },
+        "duaBookmarks": { "type": "array", "description": "Bookmarked Dua IDs (bounded <= 50)." },
+        "notifEnabled": { "type": "boolean" },
+        "notifMinutesBefore": { "type": "integer" },
+        "notifPlaySound": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp via FieldValue.serverTimestamp()" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp via FieldValue.serverTimestamp()" }
+      },
+      "required": ["userId", "appLanguage", "createdAt", "updatedAt"]
+    },
+    "PrayerLog": {
+      "title": "PrayerLog",
+      "description": "Daily completed obligatory prayers tracked for a given yyyy-MM-dd dateKey.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Firebase Auth UID of the document owner." },
+        "prayersCompleted": { "type": "array", "description": "List of completed PrayerName strings (max 5)." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp via FieldValue.serverTimestamp()" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp via FieldValue.serverTimestamp()" }
+      },
+      "required": ["userId", "prayersCompleted", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserPreferences" },
+      "description": "Private user-scoped preferences, Tasbih stats, and Dua bookmarks."
+    },
+    "/users/{userId}/prayerLogs/{logId}": {
+      "schema": { "$ref": "#/entities/PrayerLog" },
+      "description": "User-scoped daily prayer tracker logs keyed by yyyy-MM-dd."
+    }
+  }
+}

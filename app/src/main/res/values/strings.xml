@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">NAMAZ</string>
+    <string name="tile_label">Namaz Mode</string>
+    <string name="tile_subtitle_on">ON</string>
+    <string name="tile_subtitle_off">OFF</string>
+    <string name="notif_channel_status">Namaz Mode Status</string>
+    <string name="notif_channel_status_desc">Persistent status while Namaz Mode is active</string>
+    <string name="notif_title_active">Namaz Mode is Active</string>
+    <string name="notif_text_active">Namaz Mode is Active – Please do not disturb.</string>
+    <string name="notif_action_turn_off">Turn OFF</string>
+    <string name="notif_channel_calls">Handled Calls During Salah</string>
+    <string name="notif_call_handled_title">Call Handled During Namaz</string>
+</resources>

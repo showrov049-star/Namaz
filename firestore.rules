@@ -1,0 +1,125 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUserPreferences(data, userId) {
+      return data.userId is string &&
+             data.userId == userId &&
+             data.appLanguage is string && data.appLanguage in ['ENGLISH', 'BENGALI'] &&
+             (!('voiceLanguage' in data) || (data.voiceLanguage is string && data.voiceLanguage in ['BENGALI', 'ENGLISH'])) &&
+             (!('durationMinutes' in data) || (data.durationMinutes is int && data.durationMinutes >= 1 && data.durationMinutes <= 180)) &&
+             (!('autoTurnOff' in data) || data.autoTurnOff is bool) &&
+             (!('autoCallResponseEnabled' in data) || data.autoCallResponseEnabled is bool) &&
+             (!('calculationMethod' in data) || (data.calculationMethod is string && data.calculationMethod.size() >= 1 && data.calculationMethod.size() <= 32)) &&
+             (!('asrSchool' in data) || (data.asrSchool is string && data.asrSchool in ['HANAFI', 'STANDARD'])) &&
+             (!('touchSoundsEnabled' in data) || data.touchSoundsEnabled is bool) &&
+             (!('hapticFeedbackEnabled' in data) || data.hapticFeedbackEnabled is bool) &&
+             (!('soundVolume' in data) || (data.soundVolume is number && data.soundVolume >= 0.0 && data.soundVolume <= 1.0)) &&
+             (!('hapticIntensity' in data) || (data.hapticIntensity is string && data.hapticIntensity in ['LIGHT', 'MEDIUM', 'STRONG'])) &&
+             (!('tasbihZikrId' in data) || (data.tasbihZikrId is string && data.tasbihZikrId.size() <= 64)) &&
+             (!('tasbihDailyCount' in data) || (data.tasbihDailyCount is int && data.tasbihDailyCount >= 0 && data.tasbihDailyCount <= 1000000)) &&
+             (!('tasbihLifetimeCount' in data) || (data.tasbihLifetimeCount is int && data.tasbihLifetimeCount >= 0)) &&
+             (!('tasbihDailyGoal' in data) || (data.tasbihDailyGoal is int && data.tasbihDailyGoal >= 1 && data.tasbihDailyGoal <= 100000)) &&
+             (!('tasbihDateKey' in data) || (data.tasbihDateKey is string && data.tasbihDateKey.size() <= 32)) &&
+             (!('duaBookmarks' in data) || (data.duaBookmarks is list && data.duaBookmarks.size() <= 50 && (data.duaBookmarks.size() == 0 || data.duaBookmarks[0] is string))) &&
+             (!('notifEnabled' in data) || data.notifEnabled is bool) &&
+             (!('notifMinutesBefore' in data) || (data.notifMinutesBefore is int && data.notifMinutesBefore >= 0 && data.notifMinutesBefore <= 120)) &&
+             (!('notifPlaySound' in data) || data.notifPlaySound is bool) &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidPrayerLog(data, userId) {
+      return data.userId is string &&
+             data.userId == userId &&
+             data.prayersCompleted is list &&
+             data.prayersCompleted.size() <= 5 &&
+             (data.prayersCompleted.size() == 0 || (data.prayersCompleted[0] is string && data.prayersCompleted[0] in ['FAJR', 'DHUHR', 'ASR', 'MAGHRIB', 'ISHA'])) &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false;
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       incoming().keys().hasAll(['userId', 'appLanguage', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'appLanguage', 'voiceLanguage', 'durationMinutes', 'autoTurnOff',
+                         'autoCallResponseEnabled', 'calculationMethod', 'asrSchool',
+                         'touchSoundsEnabled', 'hapticFeedbackEnabled', 'soundVolume', 'hapticIntensity',
+                         'tasbihZikrId', 'tasbihDailyCount', 'tasbihLifetimeCount', 'tasbihDailyGoal',
+                         'tasbihDateKey', 'duaBookmarks', 'notifEnabled', 'notifMinutesBefore',
+                         'notifPlaySound', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       isValidUserPreferences(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidUserPreferences(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'appLanguage', 'voiceLanguage', 'durationMinutes', 'autoTurnOff',
+                         'autoCallResponseEnabled', 'calculationMethod', 'asrSchool',
+                         'touchSoundsEnabled', 'hapticFeedbackEnabled', 'soundVolume', 'hapticIntensity',
+                         'tasbihZikrId', 'tasbihDailyCount', 'tasbihLifetimeCount', 'tasbihDailyGoal',
+                         'tasbihDateKey', 'duaBookmarks', 'notifEnabled', 'notifMinutesBefore',
+                         'notifPlaySound', 'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      match /prayerLogs/{logId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(logId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(logId) &&
+                         incoming().keys().hasAll(['userId', 'prayersCompleted', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'prayersCompleted', 'createdAt', 'updatedAt']) &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time &&
+                         isValidPrayerLog(incoming(), userId);
+
+        allow update: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(logId) &&
+                         isValidPrayerLog(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'prayersCompleted', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(logId);
+      }
+    }
+  }
+}
